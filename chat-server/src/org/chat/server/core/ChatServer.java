@@ -108,6 +108,23 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public synchronized void onSocketReady(SocketThread t, Socket socket) {
         putLog("client is ready");
         clients.add(t);
+        putLog("clients size is " + clients.size());
+        ClientThread client = (ClientThread) t;
+        Thread disconnectUnauthorizedTimer = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(120000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(!client.isAuthorized()) {
+                    client.close();
+                    onSocketStop(t);
+                }
+            }
+        });
+        disconnectUnauthorizedTimer.start();
     }
 
     @Override
